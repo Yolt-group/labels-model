@@ -1,0 +1,30 @@
+model_name: labels-model
+domain: yts
+model_bucket: yolt-dp-{{ env }}-datascience-labels-model
+aws_iam_role_name: YoltDatascienceSagemakerLabelsModel
+airflow_dag_file:
+  - "dags/labels_train_dag.py"
+package_dir: labels_model
+
+preprocessing:
+  processing_type: spark
+  entrypoint: "labels_model/preprocessing/main.py"
+  job_docker_image: "{{ docker_registry }}/datascience/yds-pyspark-preprocessing:466d311f"
+  instance_type: "ml.r5.4xlarge"
+  sagemaker_processor_kwargs:
+    volume_size_in_gb: 400
+    max_runtime_in_seconds: 7200
+  spark_config:
+    spark.driver.memory: "30g"
+    spark.driver.maxResultSize: "64g"
+  script_config:
+    model: labels
+
+training:
+  training_type: tensorflow
+  job_docker_image: "{{ docker_registry }}/datascience/yds-tensorflow-training:466d311f"
+  instance_type: "ml.p3.2xlarge"
+  entrypoint: "labels_model/training/main.py"
+  additional_requirements_file: training_requirements.txt
+  sagemaker_processor_kwargs:
+    max_run: 43200

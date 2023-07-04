@@ -1,0 +1,64 @@
+preprocessing:
+  script_config:
+    model: labels
+    sample_end_date: '2020-12-31'
+    sample_start_date: '2017-01-01'
+    nl_sample_start_date: '2017-01-01'
+    deploy_id: '{deploy_id}'
+    environment: dta
+    exchange_bucket_name: yolt-dp-dta-exchange-yoltapp
+    move_artifacts:
+    job_type: lambda
+    n_categories_feedback: 5000
+    n_labels_feedback_per_country_per_label: 5000
+    n_test_samples: 600
+    n_validation_samples: 600
+    test_data_file: preprocessed_test_data
+    docker_output_path: /opt/ml/processing/output
+    training_data_file: preprocessed_training_data
+    validation_data_file: preprocessed_validation_data
+    data_file_paths:
+      transactions: s3a://yolt-dp-dta-datascience-labels-model/input/transactions.csv
+      transaction_cycles: s3a://yolt-dp-dta-datascience-labels-model/input/transaction_cycles.csv
+      accounts: s3a://yolt-dp-dta-datascience-labels-model/input/account.csv
+      users: s3a://yolt-dp-dta-datascience-labels-model/input/user.csv
+      test_users: s3a://yolt-dp-dta-datascience-labels-model/input/test_users.csv
+      user_single_feedback_created_categories: s3a://yolt-dp-dta-datascience-labels-model/input/data_science_events/user_single_feedback_created.json
+      user_multiple_feedback_created_categories: s3a://yolt-dp-dta-datascience-labels-model/input/data_science_events/user_multiple_feedback_created.json
+      user_multiple_feedback_applied_categories: s3a://yolt-dp-dta-datascience-labels-model/input/data_science_events/user_multiple_feedback_applied.json
+      user_feedback_labels: s3a://yolt-dp-dta-datascience-labels-model/input/data_science_events/user_feedback_labels.csv
+      historical_categories_feedback: s3a://yolt-dp-dta-datascience-labels-model/input/historical_categories_feedback/*.csv
+      historical_labels_feedback: s3a://yolt-dp-dta-datascience-labels-model/input/historical_labels_feedback/*.csv
+
+training:
+  instance_type: ml.m5.large
+  script_config:
+    environment: dta
+    model: labels
+    sample_end_date: '2020-12-31'
+    sample_start_date: '2017-01-01'
+    nl_sample_start_date: '2017-01-01'
+    n_labels_feedback_per_country_per_label: 5000
+    n_categories_feedback: 5000
+    n_validation_samples: 600
+    n_test_samples: 600
+    training_data_file: preprocessed_training_data
+    validation_data_file: preprocessed_validation_data
+    test_data_file: preprocessed_test_data
+    docker_exchange_path: /opt/ml/processing/exchange
+    docker_output_path: /opt/ml/model
+    docker_performant_model_output_path: /opt/ml/output/data
+    preprocessing:
+      docker_output_path: /opt/ml/input/data/preprocessing_output
+    data_file_paths:
+      accounts: s3a://yolt-dp-dta-datascience-labels-model/input/account.csv
+      transactions: s3a://yolt-dp-dta-datascience-labels-model/input/transactions.csv
+      transaction_cycles: s3a://yolt-dp-dta-datascience-labels-model/input/transaction_cycles.csv
+      transactions: s3a://yolt-dp-dta-datascience-labels-model/input/transactions.csv
+      user_feedback_labels: s3a://yolt-dp-dta-datascience-labels-model/input/data_science_events/user_feedback_labels.csv
+      user_multiple_feedback_applied_categories: s3a://yolt-dp-dta-datascience-labels-model/input/data_science_events/user_multiple_feedback_applied.json
+      user_multiple_feedback_created_categories: s3a://yolt-dp-dta-datascience-labels-model/input/data_science_events/user_multiple_feedback_created.json
+      user_single_feedback_created_categories: s3a://yolt-dp-dta-datascience-labels-model/input/data_science_events/user_single_feedback_created.json
+      users: s3a://yolt-dp-dta-datascience-labels-model/input/user.csv
+      validation_data_file: preprocessed_validation_data
+

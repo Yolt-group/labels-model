@@ -1,0 +1,72 @@
+preprocessing:
+  instance_count: 1
+  instance_type: ml.m5.4xlarge
+  sagemaker_processor_kwargs:
+    max_runtime_in_seconds: 10800
+    volume_size_in_gb: 600
+  script_config:
+    environment: prd
+    sample_end_date: '2020-12-31'
+    sample_start_date: '2020-01-01'
+    nl_sample_start_date: '2017-01-01'
+    s3_bucket_name: yolt-dp-prd-datascience-labels-model
+    job_type: spark
+    n_categories_feedback: 3000000
+    n_labels_feedback_per_country_per_label: 150000
+    n_test_samples: 300000
+    n_validation_samples: 100000
+    test_data_file: preprocessed_test_data
+    docker_output_path: /opt/ml/processing/output
+    training_data_file: preprocessed_training_data
+    validation_data_file: preprocessed_validation_data
+    data_file_paths:
+      transactions: s3a://yolt-dp-prd-data/cassandra/full_dump/datascience/transactions
+      transaction_cycles: s3a://yolt-dp-prd-data/cassandra/full_dump/transaction_cycles/transaction_cycle
+      accounts: s3a://yolt-dp-prd-data/cassandra/full_dump/accounts/account
+      users: s3a://yolt-dp-prd-data/cassandra/full_dump/users/user
+      test_users: s3a://yolt-dp-prd-data/cassandra/views/experimental_users
+      user_single_feedback_created_categories: s3a://yolt-dp-prd-data/service-events/data/datascienceEvents/categories/T0.0.0-D2/type_name=UserSingleFeedbackCreated
+      user_multiple_feedback_created_categories: s3a://yolt-dp-prd-data/service-events/data/datascienceEvents/categories/T0.0.0-D2/type_name=UserMultipleFeedbackCreated
+      user_multiple_feedback_applied_categories: s3a://yolt-dp-prd-data/service-events/data/datascienceEvents/categories/T0.0.0-D2/type_name=UserMultipleFeedbackApplied
+      user_feedback_labels: s3a://yolt-dp-prd-data/service-events/data/datascienceFeedback/T1.0.1-D0.0.0/model=labels
+      historical_categories_feedback: s3a://yolt-dp-prd-data/static/categories_model/historical_feedback/*
+      historical_labels_feedback: s3a://yolt-dp-prd-data/static/transaction_labels_model/synthetic_events/*
+
+training:
+  instance_type: ml.g4dn.2xlarge
+  sagemaker_processor_kwargs:
+    max_run: 43200
+    volume_size_in_gb: 30
+  script_config:
+    environment: prd
+    model: labels
+    model_tag: master
+    driver_memory: 1G
+    sample_end_date: '2020-12-31'
+    sample_start_date: '2020-01-01'
+    nl_sample_start_date: '2017-01-01'
+    job_type: tensorflow
+    n_labels_feedback_per_country_per_label: 150000
+    n_categories_feedback: 3000000
+    n_validation_samples: 100000
+    n_test_samples: 300000
+    training_data_file: preprocessed_training_data
+    validation_data_file: preprocessed_validation_data
+    test_data_file: preprocessed_test_data
+    docker_exchange_path: /opt/ml/processing/exchange
+    docker_output_path: /opt/ml/model
+    docker_performant_model_output_path: /opt/ml/output/data
+    preprocessing:
+      docker_output_path: /opt/ml/input/data/preprocessing_output
+    data_file_paths:
+      transactions: s3a://yolt-dp-prd-data/cassandra/full_dump/datascience/transactions
+      transaction_cycles: s3a://yolt-dp-prd-data/cassandra/full_dump/transaction_cycles/transaction_cycle
+      accounts: s3a://yolt-dp-prd-data/cassandra/full_dump/accounts/account
+      users: s3a://yolt-dp-prd-data/cassandra/full_dump/users/user
+      test_users: s3a://yolt-dp-prd-data/cassandra/views/experimental_users
+      user_single_feedback_created_categories: s3a://yolt-dp-prd-data/service-events/data/datascienceEvents/categories/T0.0.0-D2/type_name=UserSingleFeedbackCreated
+      user_multiple_feedback_created_categories: s3a://yolt-dp-prd-data/service-events/data/datascienceEvents/categories/T0.0.0-D2/type_name=UserMultipleFeedbackCreated
+      user_multiple_feedback_applied_categories: s3a://yolt-dp-prd-data/service-events/data/datascienceEvents/categories/T0.0.0-D2/type_name=UserMultipleFeedbackApplied
+      user_feedback_labels: s3a://yolt-dp-prd-data/service-events/data/datascienceFeedback/T1.0.1-D0.0.0/model=labels
+      historical_categories_feedback: s3a://yolt-dp-prd-data/static/categories_model/historical_feedback/*
+      historical_labels_feedback: s3a://yolt-dp-prd-data/static/transaction_labels_model/synthetic_events/*
